@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { vueManager } from "../utils/vue";
 
   // Props
   export let activeTab = "new-order";
@@ -15,7 +16,15 @@
   function handleTabClick(tabId: string) {
     if (activeTab !== tabId) {
       activeTab = tabId;
+
+      // 触发自定义事件
       dispatch("tabChange", { tab: tabId });
+
+      // 获取Vue实例
+      const vueInstance = vueManager.getVueInstance();
+      if (vueInstance) {
+        console.log(vueInstance);
+      }
     }
   }
 </script>
