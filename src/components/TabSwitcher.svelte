@@ -1,81 +1,148 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { EventHandler } from "../services/OrderService";
-  import { StateManager } from "../services/StateManager";
+  import { createEventDispatcher } from "svelte";
 
   // Props
   export let activeTab = "new-order";
 
-  // 元素引用
-  let containerElement: HTMLElement;
+  // 状态管理
+  let showNewOrderTooltip = false;
+  let showOldOrderTooltip = false;
 
-  // 生命周期
-  onMount(() => {
-    // 初始化标签切换
-    EventHandler.setupTabEvents(containerElement);
+  // 事件分发器
+  const dispatch = createEventDispatcher();
 
-    // 设置当前状态
-    StateManager.setCurrentTab(activeTab as "new-order" | "old-order");
-  });
-
-  // 处理标签切换
-  function handleTabClick(tab: "new-order" | "old-order") {
-    activeTab = tab;
-    StateManager.setCurrentTab(tab);
+  // 处理标签点击
+  function handleTabClick(tabId: string) {
+    if (activeTab !== tabId) {
+      activeTab = tabId;
+      dispatch("tabChange", { tab: tabId });
+    }
   }
 </script>
 
-<div class="order-history-tabs" bind:this={containerElement}>
+<div class="order-history-tabs">
   <div class="tab-container">
-    <a
-      href="javascript:;"
-      class="order-tab {activeTab === 'new-order' ? 'active' : ''}"
-      data-tab="new-order"
+    <div
+      class="tab-item {activeTab === 'new-order' ? 'active' : ''}"
       on:click={() => handleTabClick("new-order")}
+      data-tab="new-order"
     >
-      New Order
-    </a>
-    <a
-      href="javascript:;"
-      class="order-tab {activeTab === 'old-order' ? 'active' : ''}"
-      data-tab="old-order"
+      <span class="tab-text">New Order</span>
+      <div
+        class="info-icon"
+        on:mouseenter={() => (showNewOrderTooltip = true)}
+        on:mouseleave={() => (showNewOrderTooltip = false)}
+      >
+        !
+      </div>
+      {#if showNewOrderTooltip}
+        <div class="tooltip">Create a new order</div>
+      {/if}
+    </div>
+
+    <div
+      class="tab-item {activeTab === 'old-order' ? 'active' : ''}"
       on:click={() => handleTabClick("old-order")}
+      data-tab="old-order"
     >
-      Old Order
-    </a>
+      <span class="tab-text">Order History</span>
+      <div
+        class="info-icon"
+        on:mouseenter={() => (showOldOrderTooltip = true)}
+        on:mouseleave={() => (showOldOrderTooltip = false)}
+      >
+        !
+      </div>
+      {#if showOldOrderTooltip}
+        <div class="tooltip">View order history</div>
+      {/if}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
   .order-history-tabs {
-    margin-bottom: 20px;
-
     .tab-container {
       display: flex;
+      gap: 16px;
       margin-bottom: 20px;
     }
 
-    .order-tab {
+    .tab-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
       padding: 10px 20px;
-      text-decoration: none;
-      margin-right: 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      transition: all 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid #e1e3e5;
+      transition: all 0.2s ease;
 
       &.active {
-        background-color: #333;
-        color: #fff;
-        border-color: #333;
+        background-color: #42474b;
+        border-color: #42474b;
+        color: white;
       }
 
       &:not(.active) {
-        background-color: #fff;
-        color: #333;
+        background-color: white;
+        color: #42474b;
 
         &:hover {
-          background-color: #f5f5f5;
+          background-color: #f6f6f7;
         }
+      }
+    }
+
+    .tab-text {
+      margin-right: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .info-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 10px;
+      transition: all 0.2s ease;
+      border: 1px solid currentColor;
+      color: currentColor;
+      text-align: center;
+      line-height: 16px;
+      cursor: help;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .tooltip {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #42474b;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e1e3e5;
+      z-index: 1000;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-left: 1px solid #e1e3e5;
+        border-top: 1px solid #e1e3e5;
       }
     }
   }
