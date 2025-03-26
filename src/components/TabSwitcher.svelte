@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { vueManager } from "../utils/vue";
+  import { findVueInstance } from "../utils/vue";
 
   // Props
   export let activeTab = "new-order";
@@ -21,10 +21,15 @@
       dispatch("tabChange", { tab: tabId });
 
       // 获取Vue实例
-      const vueInstance = vueManager.getVueInstance();
-      if (vueInstance) {
-        console.log(vueInstance);
-      }
+      const accountVueInstance = findVueInstance("div.account");
+      console.log("account组件实例", accountVueInstance);
+      const elPagination =
+        accountVueInstance.$el.querySelector(".el-pagination");
+      const elPaginationInstance = elPagination.__vue__;
+      console.log("el-pagination组件实例", elPaginationInstance);
+      setTimeout(() => {
+        elPaginationInstance.handleCurrentChange(2);
+      }, 1500);
     }
   }
 </script>
