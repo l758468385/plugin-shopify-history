@@ -2,23 +2,32 @@
  * Shopify历史订单插件 - 主入口文件
  */
 import TabSwitcher from "./components/TabSwitcher.svelte";
+import { vueManager } from "./utils/vueInstanceManager";
 
 let tabSwitcher;
 
 function initUIExtension() {
-  if (false) {
-    window.UIExtensionPointSimpleMgr.extend("order-history-tabs", () => {
-      const container = document.createElement("div");
-      container.className = "shopify-history-tabs-container";
+  // 延迟初始化Vue实例缓存，确保页面已加载
+  setTimeout(() => {
+    vueManager.init();
+    console.log("Vue实例缓存初始化完成");
+  }, 1500); // 延迟1.5秒，与原代码的延迟保持一致
 
-      tabSwitcher = new TabSwitcher({
-        target: container,
-        props: {
-          activeTab: "new-order",
-        },
+  if (false) {
+    if (window.UIExtensionPointSimpleMgr) {
+      window.UIExtensionPointSimpleMgr.extend("order-history-tabs", () => {
+        const container = document.createElement("div");
+        container.className = "shopify-history-tabs-container";
+
+        tabSwitcher = new TabSwitcher({
+          target: container,
+          props: {
+            activeTab: "new-order",
+          },
+        });
+        return container;
       });
-      return container;
-    });
+    }
   } else {
     console.warn("UIExtensionPointSimpleMgr 未找到，尝试直接寻找Order History标题");
 
