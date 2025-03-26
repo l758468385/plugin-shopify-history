@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { vueManager } from "../utils/vueInstanceManager";
+  import { resetPagination } from "../utils/vue";
 
   // Props
   export let activeTab = "new-order";
@@ -21,7 +21,7 @@
       dispatch("tabChange", { tab: tabId });
 
       // 重置分页到第一页
-      vueManager.resetPaginationToFirstPage();
+      resetPagination();
     }
   }
 </script>

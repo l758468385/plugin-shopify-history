@@ -2,17 +2,10 @@
  * Shopify历史订单插件 - 主入口文件
  */
 import TabSwitcher from "./components/TabSwitcher.svelte";
-import { vueManager } from "./utils/vueInstanceManager";
 
 let tabSwitcher;
 
 function initUIExtension() {
-  // 延迟初始化Vue实例缓存，确保页面已加载
-  setTimeout(() => {
-    vueManager.init();
-    console.log("Vue实例缓存初始化完成");
-  }, 1500); // 延迟1.5秒，与原代码的延迟保持一致
-
   if (false) {
     if (window.UIExtensionPointSimpleMgr) {
       window.UIExtensionPointSimpleMgr.extend("order-history-tabs", () => {
