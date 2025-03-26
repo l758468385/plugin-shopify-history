@@ -1,0 +1,1 @@
+<script src="{{ mix_cdn('js/applications/shopify-historical-orders.js') }}" async integrity="{{ get_integrity('js/applications/shopify-historical-orders') }}" crossorigin="anonymous"></script>

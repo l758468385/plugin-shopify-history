@@ -1,0 +1,26 @@
+{
+  "name": "shopify-history",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev-shop": "vite build -w",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:changelog": "echo changelog",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@tsconfig/svelte": "^5.0.0",
+    "autoprefixer": "^10.4.21",
+    "sass": "^1.69.0",
+    "svelte": "^4.2.0",
+    "svelte-check": "^3.5.0",
+    "svelte-preprocess": "^5.0.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.2.0",
+    "vite": "^5.4.10"
+  }
+}

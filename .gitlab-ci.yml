@@ -1,0 +1,142 @@
+variables:
+  PROJECT_NAME: plugin-shopify-history
+
+include:
+  - remote: 'https://cdn-packages.s3.us-east-2.amazonaws.com/docs/gitlab-ci-template/package-v1.8.yml'
+
+release-patch:
+  extends: .release-patch
+
+release-minor:
+  extends: .release-minor
+
+release-major:
+  extends: .release-major
+
+stages:
+  - build
+  - deploy
+
+.common-build-script: &common-build-script
+  - cp $ENV_FILE .env
+  - if [ ! -d "node_modules" ]; then echo "node_modules not exist"; yarn; else echo "node_modules exist"; fi
+  - yarn build
+  - node ./calculate-integrity.js
+  - cd dist/
+  - cp shopify-history.js index.js
+  - aliyun configure set --profile akProfile --mode AK --region $ALIYUN_REGION --access-key-id $ALIYUN_ACCESS_KEY_ID --access-key-secret $ALIYUN_ACCESS_KEY_SECRET
+  - VERSION=$(cut -d',' -f1 version_integrity.txt)
+  - RANDOM_SUFFIX=$(cut -d',' -f3 version_integrity.txt)
+  - |
+    if [ "$ENV_FILE" = "$PLUGIN_DEVELOP_ENV" ]; then
+      TARGET_PATH="oss://cartsee-apps/$CI_COMMIT_BRANCH/$RANDOM_SUFFIX"
+      BRANCH_NAME="$CI_COMMIT_BRANCH"
+    elif [ "$ENV_FILE" = "$PLUGIN_STAGING_ENV" ]; then
+      TARGET_PATH="oss://cartsee-apps/staging/v$VERSION"
+      BRANCH_NAME="staging"
+    elif [ "$ENV_FILE" = "$PLUGIN_PRODUCTION_ENV" ]; then
+      TARGET_PATH="oss://cartsee-apps/v$VERSION"
+      BRANCH_NAME="production"
+    fi
+  - ls -la
+  - aliyun oss cp index.js $TARGET_PATH/index.js --update
+  - node ../generate-script-tag.js $BRANCH_NAME
+
+build-develop:
+  stage: build
+  cache:
+    key:
+      files:
+        - package.json
+        - yarn.lock
+    paths:
+      - node_modules
+  script:
+    - export ENV_FILE=$PLUGIN_DEVELOP_ENV
+    - *common-build-script
+  artifacts:
+    name: develop
+    expire_in: 1 day
+    paths:
+      - dist/
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*$/'
+  when: manual
+
+build-staging:
+  stage: build
+  cache:
+    key:
+      files:
+        - package.json
+        - yarn.lock
+    paths:
+      - node_modules
+  script:
+    - export ENV_FILE=$PLUGIN_STAGING_ENV
+    - *common-build-script
+  artifacts:
+    name: staging
+    expire_in: 1 day
+    paths:
+      - dist/
+  only:
+    - tags
+  when: manual
+
+build-production:
+  stage: build
+  cache:
+    key:
+      files:
+        - package.json
+        - yarn.lock
+    paths:
+      - node_modules
+  script:
+    - export ENV_FILE=$PLUGIN_PRODUCTION_ENV
+    - *common-build-script
+  artifacts:
+    name: production
+    expire_in: 1 day
+    paths:
+      - dist/
+  only:
+    - tags
+  when: manual
+
+deploy-develop:
+  stage: deploy
+  dependencies:
+    - build-develop
+  script:
+    - yarn add node-fetch
+    - cd dist/
+    - node ../save-custom-code.js $CI_COMMIT_BRANCH ${API_URL_DEVELOP} ${PUBLISH_CUSTOMCODE_KEY}
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*$/'
+  when: manual
+
+deploy-staging:
+  stage: deploy
+  dependencies:
+    - build-staging
+  script:
+    - yarn add node-fetch
+    - cd dist/
+    - node ../save-custom-code.js staging ${API_URL_STAGING} ${PUBLISH_CUSTOMCODE_KEY}
+  only:
+    - tags
+  when: manual
+
+deploy-production:
+  stage: deploy
+  dependencies:
+    - build-production
+  script:
+    - yarn add node-fetch
+    - cd dist/
+    - node ../save-custom-code.js production ${API_URL_PRODUCTION} ${PUBLISH_CUSTOMCODE_KEY}
+  only:
+    - tags
+  when: manual
