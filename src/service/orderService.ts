@@ -5,6 +5,9 @@
 import { getMainApp } from "./vueService";
 import { activeTab } from "../store/tabStore";
 
+// 标记表格观察器是否已设置
+let tableObserverSetup = false;
+
 /**
  * 初始化订单服务
  * 设置对Tab状态的监听
@@ -14,6 +17,9 @@ export function initOrderService(): void {
   activeTab.subscribe((tab) => {
     processCurrentOrderLinks(tab);
   });
+
+  // 设置表格观察器
+  setupTableObserver();
 }
 
 /**
@@ -26,8 +32,6 @@ export function showOrderDetail(orderId: string): boolean {
     console.warn("订单ID为空，无法显示详情");
     return false;
   }
-
-  console.log(`显示订单详情，订单ID: ${orderId}`);
 
   // 尝试通过Vue实例显示
   const app = getMainApp();
@@ -52,11 +56,8 @@ function processCurrentOrderLinks(activeTab: string): number {
   );
 
   if (!orderLinks.length) {
-    console.log("未找到订单链接，可能数据尚未加载完成");
     return 0;
   }
-
-  console.log(`处理 ${orderLinks.length} 个订单链接，当前模式: ${activeTab}`);
 
   orderLinks.forEach((link) => {
     const href = link.getAttribute("href") || "";
@@ -83,4 +84,68 @@ function processCurrentOrderLinks(activeTab: string): number {
   });
 
   return orderLinks.length;
+}
+
+/**
+ * 设置表格观察器，监听表格内容变化
+ */
+function setupTableObserver(): void {
+  // 如果已经设置过，不重复设置
+  if (tableObserverSetup) return;
+
+  // 查找表格
+  const findAndObserveTable = () => {
+    // 查找订单表格
+    const orderTable = document.querySelector('.ordertable');
+    if (!orderTable) return false;
+
+    const observer = new MutationObserver(() => {
+      // 获取当前tab
+      const currentTab = getActiveTabValue();
+
+      // 临时断开观察器，防止死循环
+      observer.disconnect();
+
+      // 处理订单链接
+      setTimeout(() => {
+        processCurrentOrderLinks(currentTab);
+
+        // 处理完成后重新连接观察器
+        observer.observe(orderTable, config);
+      }, 100);
+    });
+
+    // 观察配置 - 监听所有可能的变化
+    const config = {
+      childList: true,  // 子节点变化
+      subtree: true,    // 所有后代节点
+      characterData: true // 文本内容变化
+    };
+
+    // 开始观察
+    observer.observe(orderTable, config);
+
+    // 标记为已设置
+    tableObserverSetup = true;
+    return true;
+  };
+
+  // 立即尝试设置
+  if (!findAndObserveTable()) {
+    // 如果没找到表格，等待DOM加载后重试
+    setTimeout(() => {
+      if (!tableObserverSetup) {
+        findAndObserveTable();
+      }
+    }, 1000);
+  }
+}
+
+/**
+ * 获取当前活动标签值
+ */
+function getActiveTabValue(): string {
+  let value = '';
+  activeTab.subscribe(tab => { value = tab; })();
+  return value;
 }
