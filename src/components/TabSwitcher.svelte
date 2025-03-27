@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
-  import { resetPagination, vueManager } from "../utils/vue";
+  import { createEventDispatcher } from "svelte";
 
   // Props
   export let activeTab = "new-order";
@@ -12,14 +11,6 @@
   // 事件分发器
   const dispatch = createEventDispatcher();
 
-  // 监听activeTab变化
-  $: {
-    // 每当activeTab变化时，更新链接拦截器状态
-    if (typeof window !== 'undefined') {
-      vueManager.setupOrderLinkInterceptor(activeTab);
-    }
-  }
-
   // 处理标签点击
   function handleTabClick(tabId: string) {
     if (activeTab !== tabId) {
@@ -27,17 +18,8 @@
 
       // 触发自定义事件
       dispatch("tabChange", { tab: tabId });
-
-      // 重置分页到第一页
-      resetPagination();
     }
   }
-
-  // 生命周期钩子
-  onMount(() => {
-    // 初始设置订单链接拦截器
-    vueManager.setupOrderLinkInterceptor(activeTab);
-  });
 </script>
 
 <div class="order-history-tabs">

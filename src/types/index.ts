@@ -1,4 +1,18 @@
 /**
+ * 类型声明 - 扩展全局Window接口
+ */
+declare global {
+  interface Window {
+    UIExtensionPointSimpleMgr?: {
+      extend: (
+        name: string,
+        callback: (container: HTMLElement) => HTMLElement
+      ) => void;
+    };
+  }
+}
+
+/**
  * 订单类型定义
  */
 export interface OrderItem {
@@ -75,7 +89,7 @@ export interface Order {
  * 界面状态类型定义
  */
 export interface State {
-  currentTab: 'new-order' | 'old-order';
+  currentTab: "new-order" | "old-order";
   vueInstance: any; // Vue 实例类型，由于不依赖 Vue，使用 any
 }
 
@@ -97,7 +111,11 @@ export interface VueInstance {
  */
 export interface ShopSDKHttp {
   get: (url: string, options?: Record<string, any>) => Promise<any>;
-  post: (url: string, data?: any, options?: Record<string, any>) => Promise<any>;
+  post: (
+    url: string,
+    data?: any,
+    options?: Record<string, any>
+  ) => Promise<any>;
 }
 
 /**
@@ -119,4 +137,4 @@ declare global {
   interface Window {
     shopSDK: ShopSDK;
   }
-} 
+}

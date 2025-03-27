@@ -21,6 +21,7 @@ function mountViaExtensionPoint(): boolean {
     const extensionPoint = document.querySelector(
       'ws-extension-point-simple[data-point-key="order-history-tabs"]'
     );
+    console.log("extensionPoint", extensionPoint);
     if (!extensionPoint) {
       console.warn("未找到 order-history-tabs 扩展点");
       return false;
@@ -66,14 +67,16 @@ function mountViaDOMQuery(): void {
  * 先尝试使用扩展点方式，如果失败则使用DOM查询方式
  */
 export function initializePlugin(): void {
-  console.log("Shopify历史订单插件初始化...");
+  setTimeout(() => {
+    console.log("Shopify历史订单插件初始化...");
 
-  // 尝试通过扩展点挂载
-  const mountedViaExtensionPoint = mountViaExtensionPoint();
+    // 尝试通过扩展点挂载
+    const mountedViaExtensionPoint = mountViaExtensionPoint();
 
-  // 如果扩展点挂载失败，使用DOM查询方式
-  if (!mountedViaExtensionPoint) {
-    console.log("扩展点挂载失败，尝试DOM查询方式...");
-    mountViaDOMQuery();
-  }
+    // 如果扩展点挂载失败，使用DOM查询方式
+    if (!mountedViaExtensionPoint) {
+      console.log("扩展点挂载失败，尝试DOM查询方式...");
+      mountViaDOMQuery();
+    }
+  }, 500);
 }
