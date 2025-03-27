@@ -35,9 +35,6 @@ function mountViaExtensionPoint(): boolean {
 
       tabSwitcher = new TabSwitcher({
         target: container,
-        props: {
-          activeTab: "new-order",
-        },
       });
       return container;
     });
@@ -56,7 +53,9 @@ function mountViaDOMQuery(): void {
   // 创建容器并插入到h2标题后面
   const container = document.createElement("div");
   container.className = "shopify-history-tabs-container";
-
+  tabSwitcher = new TabSwitcher({
+    target: container,
+  });
   if (orderTitle && orderTitle.parentNode) {
     orderTitle.parentNode.insertBefore(container, orderTitle.nextSibling);
   }

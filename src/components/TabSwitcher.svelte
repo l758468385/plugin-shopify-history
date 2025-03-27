@@ -1,11 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { resetPagination } from "../service/paginationService";
-  import { switchOrderLinkMode } from "../service/orderService";
-
-  type Tab = "new-order" | "old-order";
-  // Props
-  export let activeTab: Tab = "new-order";
+  import { initOrderService } from "../service/orderService";
+  import { activeTab, setActiveTab, type TabType } from "../store/tabStore";
 
   // 状态管理
   let showNewOrderTooltip = false;
@@ -14,20 +11,25 @@
   // 事件分发器
   const dispatch = createEventDispatcher();
 
+  // 组件挂载时初始化订单服务
+  onMount(() => {
+    // 初始化订单服务（只需执行一次）
+    initOrderService();
+  });
+
   // 处理标签点击
-  function handleTabClick(tabId: Tab) {
-    if (activeTab !== tabId) {
-      const oldTab = activeTab;
-      activeTab = tabId;
+  function handleTabClick(tabId: TabType) {
+    if ($activeTab !== tabId) {
+      const oldTab = $activeTab;
+
+      // 更新Tab状态
+      setActiveTab(tabId);
 
       // 触发Svelte自定义事件
       dispatch("tabChange", { tab: tabId });
 
       // 重置分页到第1页
       resetPagination();
-
-      // 切换订单链接模式
-      switchOrderLinkMode(tabId);
 
       console.log(`标签切换: ${oldTab} -> ${tabId}`);
     }
@@ -37,7 +39,7 @@
 <div class="order-history-tabs">
   <div class="tab-container">
     <div
-      class="tab-item {activeTab === 'new-order' ? 'active' : ''}"
+      class="tab-item {$activeTab === 'new-order' ? 'active' : ''}"
       on:click={() => handleTabClick("new-order")}
       data-tab="new-order"
     >
@@ -55,7 +57,7 @@
     </div>
 
     <div
-      class="tab-item {activeTab === 'old-order' ? 'active' : ''}"
+      class="tab-item {$activeTab === 'old-order' ? 'active' : ''}"
       on:click={() => handleTabClick("old-order")}
       data-tab="old-order"
     >

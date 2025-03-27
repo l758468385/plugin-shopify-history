@@ -3,6 +3,20 @@
  */
 
 import { getMainApp } from "./vueService";
+import { activeTab } from "../store/tabStore";
+
+/**
+ * 初始化订单服务
+ * 设置对Tab状态的监听
+ */
+export function initOrderService(): void {
+  // 订阅Tab状态变化
+  activeTab.subscribe((tab) => {
+    console.log(`Tab状态变化: ${tab}`);
+    processCurrentOrderLinks(tab);
+  });
+  console.log("订单服务初始化完成");
+}
 
 /**
  * 显示订单详情弹窗
@@ -30,16 +44,21 @@ export function showOrderDetail(orderId: string): boolean {
 }
 
 /**
- * 切换订单链接模式
+ * 处理当前可见的订单链接
  * @param activeTab 当前活动标签
  * @returns 处理的链接数量
  */
-export function switchOrderLinkMode(activeTab: string): number {
+function processCurrentOrderLinks(activeTab: string): number {
   const orderLinks = document.querySelectorAll<HTMLAnchorElement>(
     '.ordertable a[href^="/account/order/"]'
   );
 
-  if (!orderLinks.length) return 0;
+  if (!orderLinks.length) {
+    console.log("未找到订单链接，可能数据尚未加载完成");
+    return 0;
+  }
+
+  console.log(`处理 ${orderLinks.length} 个订单链接，当前模式: ${activeTab}`);
 
   orderLinks.forEach((link) => {
     const href = link.getAttribute("href") || "";
@@ -47,12 +66,19 @@ export function switchOrderLinkMode(activeTab: string): number {
     if (!orderId) return;
 
     if (activeTab === "old-order") {
+      // 标记为已处理（防止重复处理）
+      link.setAttribute("data-processed", "true");
+
       // 绑定点击事件，阻止默认跳转
       link.onclick = (e) => {
         e.preventDefault();
         showOrderDetail(orderId);
+        return false;
       };
     } else {
+      // 移除处理标记
+      link.removeAttribute("data-processed");
+
       // 还原默认行为
       link.onclick = null;
     }
