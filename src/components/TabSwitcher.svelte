@@ -1,8 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { resetPagination } from "../service/paginationService";
+  import { switchOrderLinkMode } from "../service/orderService";
 
+  type Tab = "new-order" | "old-order";
   // Props
-  export let activeTab = "new-order";
+  export let activeTab: Tab = "new-order";
 
   // 状态管理
   let showNewOrderTooltip = false;
@@ -12,12 +15,21 @@
   const dispatch = createEventDispatcher();
 
   // 处理标签点击
-  function handleTabClick(tabId: string) {
+  function handleTabClick(tabId: Tab) {
     if (activeTab !== tabId) {
+      const oldTab = activeTab;
       activeTab = tabId;
 
-      // 触发自定义事件
+      // 触发Svelte自定义事件
       dispatch("tabChange", { tab: tabId });
+
+      // 重置分页到第1页
+      resetPagination();
+
+      // 切换订单链接模式
+      switchOrderLinkMode(tabId);
+
+      console.log(`标签切换: ${oldTab} -> ${tabId}`);
     }
   }
 </script>
