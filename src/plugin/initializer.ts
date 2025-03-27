@@ -4,7 +4,7 @@
 import TabSwitcher from "../components/TabSwitcher.svelte";
 
 // 组件实例
-let tabSwitcher: any;
+let tabSwitcher;
 
 /**
  * 通过扩展点挂载组件

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { resetPagination } from "../service/paginationService";
   import { initOrderService } from "../service/orderService";
   import { activeTab, setActiveTab, type TabType } from "../store/tabStore";
@@ -8,9 +8,6 @@
   let showNewOrderTooltip = false;
   let showOldOrderTooltip = false;
 
-  // 事件分发器
-  const dispatch = createEventDispatcher();
-
   // 组件挂载时初始化订单服务
   onMount(() => {
     // 初始化订单服务（只需执行一次）
@@ -18,20 +15,12 @@
   });
 
   // 处理标签点击
-  function handleTabClick(tabId: TabType) {
-    if ($activeTab !== tabId) {
-      const oldTab = $activeTab;
-
+  function handleTabClick(nextTab: TabType) {
+    if ($activeTab !== nextTab) {
       // 更新Tab状态
-      setActiveTab(tabId);
-
-      // 触发Svelte自定义事件
-      dispatch("tabChange", { tab: tabId });
-
+      setActiveTab(nextTab);
       // 重置分页到第1页
       resetPagination();
-
-      console.log(`标签切换: ${oldTab} -> ${tabId}`);
     }
   }
 </script>

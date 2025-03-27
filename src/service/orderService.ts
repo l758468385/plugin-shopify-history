@@ -12,10 +12,8 @@ import { activeTab } from "../store/tabStore";
 export function initOrderService(): void {
   // 订阅Tab状态变化
   activeTab.subscribe((tab) => {
-    console.log(`Tab状态变化: ${tab}`);
     processCurrentOrderLinks(tab);
   });
-  console.log("订单服务初始化完成");
 }
 
 /**
