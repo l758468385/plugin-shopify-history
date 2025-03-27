@@ -3,8 +3,8 @@
  */
 
 import { getMainApp } from "./vueService";
-import { activeTab } from "../store/tabStore";
-
+import { activeTab, type TabType } from "../store/tabStore";
+import { type OrderItem } from "../types/index";
 // 标记表格观察器是否已设置
 let tableObserverSetup = false;
 
@@ -27,22 +27,28 @@ export function initOrderService(): void {
  * @param orderId 订单ID
  * @returns 是否成功显示
  */
-export function showOrderDetail(orderId: string): boolean {
+export function showOrderDetail(orderId: string) {
   if (!orderId) {
     console.warn("订单ID为空，无法显示详情");
     return false;
   }
 
-  // 尝试通过Vue实例显示
   const app = getMainApp();
-  if (app && typeof app.showOrderDetail === "function") {
-    app.showOrderDetail(orderId);
-    return true;
-  } else {
-    // 简单弹窗显示
-    alert(`将显示订单详情: ${orderId}`);
-    return true;
+  if (!app?.orders?.data) {
+    console.warn("无法获取订单数据");
+    return false;
   }
+
+  const currentOrder = app.orders.data.find(
+    (item: OrderItem) => item.ID + "" === orderId
+  );
+  if (!currentOrder) {
+    console.warn(`未找到订单 ID: ${orderId}`);
+    return false;
+  }
+
+  console.log("当前订单详情:", currentOrder);
+  return currentOrder;
 }
 
 /**
@@ -50,7 +56,7 @@ export function showOrderDetail(orderId: string): boolean {
  * @param activeTab 当前活动标签
  * @returns 处理的链接数量
  */
-function processCurrentOrderLinks(activeTab: string): number {
+function processCurrentOrderLinks(activeTab: TabType): number {
   const orderLinks = document.querySelectorAll<HTMLAnchorElement>(
     '.ordertable a[href^="/account/order/"]'
   );
@@ -96,7 +102,7 @@ function setupTableObserver(): void {
   // 查找表格
   const findAndObserveTable = () => {
     // 查找订单表格
-    const orderTable = document.querySelector('.ordertable');
+    const orderTable = document.querySelector(".ordertable");
     if (!orderTable) return false;
 
     const observer = new MutationObserver(() => {
@@ -117,9 +123,9 @@ function setupTableObserver(): void {
 
     // 观察配置 - 监听所有可能的变化
     const config = {
-      childList: true,  // 子节点变化
-      subtree: true,    // 所有后代节点
-      characterData: true // 文本内容变化
+      childList: true, // 子节点变化
+      subtree: true, // 所有后代节点
+      characterData: true, // 文本内容变化
     };
 
     // 开始观察
@@ -144,8 +150,10 @@ function setupTableObserver(): void {
 /**
  * 获取当前活动标签值
  */
-function getActiveTabValue(): string {
-  let value = '';
-  activeTab.subscribe(tab => { value = tab; })();
+function getActiveTabValue(): TabType {
+  let value: TabType = "new-order";
+  activeTab.subscribe((tab) => {
+    value = tab;
+  })();
   return value;
 }
